@@ -1,0 +1,11 @@
+[
+{
+    "model": "lms.course",
+    "pk": 2,
+    "fields": {
+        "name": "Программирование",
+        "preview": "",
+        "description": null
+    }
+}
+]
