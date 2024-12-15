@@ -1,3 +1,5 @@
+from django.contrib.auth.models import Group
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
@@ -28,7 +30,31 @@ class Command(BaseCommand):
         call_command("loaddata", "lesson_fixture.json", format="json")
         self.stdout.write(self.style.SUCCESS("Уроки загружены из фикстур успешно"))
 
+        # создаем группу модераторов
+        try:
+            group = Group.objects.get(name="Модератор")
+        except ObjectDoesNotExist:
+            group = Group.objects.create(name="Модератор")
+            group.save()
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f'Успешно создана группа {group.name}'
+                )
+            )
+
         # создаем тестовых пользователей их платежи
+        # Модератор
+        user = User.objects.create(
+            email="moderator@moderator.ru",
+        )
+        user.set_password("123qwe456rty")
+        user.groups.add(group)
+        user.save()
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Успешно создан тестовый модератор с email {user.email} с паролем 123qwe456rty и добавлен в группу {group.name}"
+            )
+        )
         # Пользователь №1
         user = User.objects.create(
             email="test1@test1.ru",
@@ -90,5 +116,17 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 f"Успешно добавлены платежи для пользователя с email {user.email}"
+            )
+        )
+        # распределяем владельцев
+        courses = Course.objects.all()
+        lessons = Lesson.objects.all()
+        owner = User.objects.get(email="test1@test1.ru")
+        courses.update(owner=owner)
+        lessons.update(owner=owner)
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Владельцем всех курсов и уроков, загруженных из фикстур, назначен пользователь {owner.email}"
             )
         )
