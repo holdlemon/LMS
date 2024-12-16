@@ -18,6 +18,24 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        # Хешируем пароль с использованием set_password
+        user = User(
+            username=validated_data['username'],
+            email=validated_data['email']
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
+    def update(self, instance, validated_data):
+        # Хешируем пароль при обновлении, если пароль предоставлен
+        password = validated_data.pop('password', None)
+        if password:
+            instance.set_password(password)
+        return super().update(instance, validated_data)
 
 
 class UserCommonSerializer(ModelSerializer):
