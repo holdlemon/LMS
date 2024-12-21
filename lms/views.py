@@ -5,12 +5,14 @@ from rest_framework.response import Response
 
 from users.permissions import IsModer, IsOwner
 from .models import Course, Lesson, SubscriptionOnCourse
+from .paginators import CustomPaginator
 from .serializers import CourseSerializer, LessonSerializer
 
 
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
+    pagination_class = CustomPaginator
 
     def get_queryset(self):
         """Фильтруем набор данных в зависимости от пользователя"""
@@ -54,6 +56,7 @@ class LessonCreateAPIView(generics.CreateAPIView):
 class LessonListAPIView(generics.ListAPIView):
     serializer_class = LessonSerializer
     permission_classes = [IsAuthenticated, IsModer | IsOwner]
+    pagination_class = CustomPaginator
 
     def get_queryset(self):
         """Фильтруем набор данных в зависимости от пользователя"""
