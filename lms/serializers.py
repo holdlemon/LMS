@@ -7,7 +7,7 @@ from .validators import validate_youtube_url
 
 class LessonSerializer(serializers.ModelSerializer):
 
-    video_url = serializers.URLField(validators=[validate_youtube_url])
+    url = serializers.URLField(validators=[validate_youtube_url])
 
     class Meta:
         model = Lesson
