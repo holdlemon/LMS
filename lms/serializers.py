@@ -18,10 +18,14 @@ class CourseSerializer(serializers.ModelSerializer):
 
     lessons_count = SerializerMethodField()
     lessons = LessonSerializer(many=True, read_only=True)
-    subscription = serializers.SerializerMethodField()
+    subscription = SerializerMethodField()
 
     def get_lessons_count(self, course):
         return course.lessons.count()
+
+    def get_subscription(self, course):
+        current_user = self.context.get('request', None).user
+        return course.course_subscription.filter(user=current_user).exists()
 
     class Meta:
         model = Course
