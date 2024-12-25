@@ -10,6 +10,19 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = '__all__'
 
+    def validate(self, data):
+        # Получаем значения курса и урока
+        course = data.get('course')
+        lesson = data.get('lesson')
+
+        # Проверяем, что указан либо курс, либо урок, но не оба одновременно
+        if course and lesson:
+            raise serializers.ValidationError("Укажите либо курс, либо урок, но не оба одновременно.")
+        if not course and not lesson:
+            raise serializers.ValidationError("Необходимо указать либо курс, либо урок.")
+
+        return data
+
 
 class UserSerializer(serializers.ModelSerializer):
 

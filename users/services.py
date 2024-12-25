@@ -13,13 +13,13 @@ def convert_rub_to_dollars(amount):
 
 
 
-def create_stripe_price(amount, course_name):
+def create_stripe_price(amount, name):
     ''' Создание цены в страйпе '''
 
     return stripe.Price.create(
         currency='usd',
         unit_amount=amount * 100,
-        product_data={'name': course_name}
+        product_data={'name': name}
     )
 
 def create_stripe_session(price):

@@ -4,10 +4,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from users.permissions import IsModer, IsOwner
-from .models import Course, Lesson, SubscriptionOnCourse, CoursePayment
+from .models import Course, Lesson, SubscriptionOnCourse
 from .paginators import CustomPaginator
-from .serializers import CourseSerializer, LessonSerializer, CoursePaymentSerializer
-from .services import convert_rub_to_dollars, create_stripe_price, create_stripe_session
+from .serializers import CourseSerializer, LessonSerializer
+# from users.services import create_stripe_price, create_stripe_session
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -108,20 +108,20 @@ class SubscriptionOnCourseAPIView(views.APIView):
         return Response({"message": message}, status=status.HTTP_200_OK)
 
 
-class CoursePaymentCreateAPIView(generics.CreateAPIView):
-    serializer_class = CoursePaymentSerializer
-    queryset = CoursePayment.objects.all()
-
-    def perform_create(self, serializer):
-        payment = serializer.save(user=self.request.user)
-        course_id = self.request.data.get("course")
-        course = get_object_or_404(Course, id=course_id)
-        amount_in_dollars = course.price
-        # Почему-то не работает конвертация
-        # amount_in_dollars = convert_rub_to_dollars(course_price)
-        payment = serializer.save(amount=amount_in_dollars)
-        price = create_stripe_price(amount_in_dollars, course.name)
-        session_id, payment_link = create_stripe_session(price)
-        payment.session_id = session_id
-        payment.link = payment_link
-        payment.save()
+# class CoursePaymentCreateAPIView(generics.CreateAPIView):
+#     serializer_class = CoursePaymentSerializer
+#     queryset = CoursePayment.objects.all()
+#
+#     def perform_create(self, serializer):
+#         payment = serializer.save(user=self.request.user)
+#         course_id = self.request.data.get("course")
+#         course = get_object_or_404(Course, id=course_id)
+#         amount_in_dollars = course.price
+#         # Почему-то не работает конвертация
+#         # amount_in_dollars = convert_rub_to_dollars(course_price)
+#         payment = serializer.save(amount=amount_in_dollars)
+#         price = create_stripe_price(amount_in_dollars, course.name)
+#         session_id, payment_link = create_stripe_session(price)
+#         payment.session_id = session_id
+#         payment.link = payment_link
+#         payment.save()
