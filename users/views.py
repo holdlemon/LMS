@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from lms.models import Course, Lesson
 from users.models import User, Payment
 from users.permissions import IsUser
-from users.serializers import UserSerializer, PaymentSerializer, UserCommonSerializer, PaymentCreateSerializer
+from users.serializers import UserSerializer, PaymentSerializer, UserCommonSerializer
 from users.services import create_stripe_price, create_stripe_session, create_stripe_product
 
 
@@ -37,49 +37,29 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
-
-    model = Payment
     queryset = Payment.objects.all()
+    serializer_class = PaymentSerializer
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_fields = ["course", "lesson", "method"]
-    ordering_fields = [
-        "payment_date",
-    ]
-
-    def get_serializer_class(self):
-        # Используем PaymentCreateSerializer для POST-запросов
-        if self.request.method == 'POST':
-            return PaymentCreateSerializer
-        # Используем PaymentSerializer для других запросов
-        return PaymentSerializer
+    filterset_fields = ['course', 'lesson', 'method']
+    ordering_fields = ['payment_date',]
 
     def perform_create(self, serializer):
-        # Сохраняем платеж
-        payment = serializer.save(user=self.request.user)
+        course = serializer.validated_data.get('course')
+        lesson = serializer.validated_data.get('lesson')
+        product = course or lesson
 
-        # Получаем объект курса или урока из сохраненного платежа
-        product = payment.lesson or payment.course
-        if not product:
-            raise ValueError("Не указан ни курс, ни урок.")
-
-        # Получаем название и цену продукта
-        item_name = product.name
-        item = create_stripe_product(item_name)
-        amount = product.price
-
-        # Логика для Stripe
         try:
-            price = create_stripe_price(item, amount)
-            session_id, payment_link = create_stripe_session(price)
-        except Exception as e:
-            # Логируем ошибку, если что-то пошло не так
-            print(f"Ошибка при создании сессии Stripe: {e}")
-            raise ValidationError({"error": "Ошибка при создании платежа в Stripe."})
+            stripe_product = create_stripe_product(product.name)
+            stripe_product_price =  create_stripe_price(
+                stripe_product, product.price
+            )
+            session_id, payment_link = create_stripe_session(
+                stripe_product_price
+            )
+        except Exception:
+            raise ValidationError('Ошибка при создании платежа в Stripe.')
 
-        # Обновляем платеж
-        payment.session_id = session_id
-        payment.link = payment_link
-        payment.save()
+        serializer.save(session_id=session_id, link = payment_link)
 
 
 # class PaymentCreateAPIView(generics.CreateAPIView):

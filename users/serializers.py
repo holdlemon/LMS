@@ -4,11 +4,15 @@ from rest_framework.serializers import ModelSerializer
 from users.models import Payment, User
 
 
-class PaymentCreateSerializer(serializers.ModelSerializer):
+class PaymentSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Payment
         fields = '__all__'
+        read_only_fields = (
+            'payment_date', 'amount', 'method', 'session_id', 'link'
+        )
 
     def validate(self, data):
         # Получаем значения курса и урока
@@ -17,18 +21,15 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
 
         # Проверяем, что указан либо курс, либо урок, но не оба одновременно
         if course and lesson:
-            raise serializers.ValidationError("Укажите либо курс, либо урок, но не оба одновременно.")
+            raise serializers.ValidationError(
+                "Укажите либо курс, либо урок, но не оба одновременно."
+            )
         if not course and not lesson:
-            raise serializers.ValidationError("Необходимо указать либо курс, либо урок.")
+            raise serializers.ValidationError(
+                "Необходимо указать либо курс, либо урок."
+            )
 
         return data
-
-
-class PaymentSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Payment
-        fields = '__all__'
 
 
 class UserSerializer(serializers.ModelSerializer):
