@@ -7,7 +7,7 @@ from users.permissions import IsModer, IsOwner
 from .models import Course, Lesson, SubscriptionOnCourse
 from .paginators import CustomPaginator
 from .serializers import CourseSerializer, LessonSerializer
-# from users.services import create_stripe_price, create_stripe_session
+from .tasks import send_course_update_notification
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -44,6 +44,17 @@ class CourseViewSet(viewsets.ModelViewSet):
             permission_classes = [IsAuthenticated]
 
         return [permission() for permission in permission_classes]
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        # Вызов задачи Celery для отправки уведомлений
+        send_course_update_notification.delay(instance.id)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class LessonCreateAPIView(generics.CreateAPIView):
@@ -106,22 +117,3 @@ class SubscriptionOnCourseAPIView(views.APIView):
             message = 'Подписка добавлена'
 
         return Response({"message": message}, status=status.HTTP_200_OK)
-
-
-# class CoursePaymentCreateAPIView(generics.CreateAPIView):
-#     serializer_class = CoursePaymentSerializer
-#     queryset = CoursePayment.objects.all()
-#
-#     def perform_create(self, serializer):
-#         payment = serializer.save(user=self.request.user)
-#         course_id = self.request.data.get("course")
-#         course = get_object_or_404(Course, id=course_id)
-#         amount_in_dollars = course.price
-#         # Почему-то не работает конвертация
-#         # amount_in_dollars = convert_rub_to_dollars(course_price)
-#         payment = serializer.save(amount=amount_in_dollars)
-#         price = create_stripe_price(amount_in_dollars, course.name)
-#         session_id, payment_link = create_stripe_session(price)
-#         payment.session_id = session_id
-#         payment.link = payment_link
-#         payment.save()
