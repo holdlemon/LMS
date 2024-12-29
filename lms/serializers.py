@@ -37,3 +37,10 @@ class SubscriptionOnCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubscriptionOnCourse
         fields = ['user', 'course']
+
+
+# class CoursePaymentSerializer(serializers.ModelSerializer):
+#
+#     class Meta:
+#         model = CoursePayment
+#         fields = '__all__'
