@@ -39,23 +39,8 @@ class SubscriptionOnCourse(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='course_subscription', verbose_name='Курс')
 
     def __str__(self):
-        return f"{self.user.name} подписан на {self.course.name}"
+        return f"{self.user.email} подписан на {self.course.name}"
 
     class Meta:
         verbose_name = 'Подписка на курс'
         verbose_name_plural = 'Подписки на курсы'
-
-
-# class CoursePayment(models.Model):
-#     amount = models.PositiveIntegerField(verbose_name='Сумма оплаты')
-#     session_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='ID сессии')
-#     link = models.URLField(max_length=400, blank=True, null=True, verbose_name='Ссылка на оплату')
-#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=SET_NULL, blank=True, null=True, verbose_name='Пользователь')
-#     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='Курс')
-#
-#     def __str__(self):
-#         return self.amount
-#
-#     class Meta:
-#         verbose_name = 'Оплата курса'
-#         verbose_name_plural = 'Оплаты курсов'
