@@ -1,10 +1,9 @@
 from django.core.exceptions import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, generics
+from rest_framework import viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from lms.models import Course, Lesson
 from users.models import User, Payment
 from users.permissions import IsUser
 from users.serializers import UserSerializer, PaymentSerializer, UserCommonSerializer
