@@ -92,16 +92,24 @@ REST_FRAMEWORK = {
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": os.getenv("POSTGRES_DB"),
-        "USER": os.getenv("POSTGRES_USER"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
-        "HOST": os.getenv("POSTGRES_HOST"),
-        "PORT": os.getenv("POSTGRES_PORT"),
+if "test" in sys.argv:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "test_db.sqlite3",
+        }
     }
-}
+else:
+    DATABASES = {
+      "default": {
+          "ENGINE": "django.db.backends.postgresql_psycopg2",
+          "NAME": os.getenv("POSTGRES_DB"),
+          "USER": os.getenv("POSTGRES_USER"),
+          "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+          "HOST": os.getenv("POSTGRES_HOST"),
+          "PORT": os.getenv("POSTGRES_PORT"),
+      }
+  }
 
 
 # Password validation
@@ -182,11 +190,3 @@ CELERY_TASK_TRACK_STARTED = True
 
 # Максимальное время на выполнение задачи
 CELERY_TASK_TIME_LIMIT = 30 * 60
-
-if "test" in sys.argv:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "test_db.sqlite3",
-        }
-    }
