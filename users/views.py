@@ -1,11 +1,9 @@
 from django.core.exceptions import ValidationError
-from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, generics
+from rest_framework import viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from lms.models import Course, Lesson
 from users.models import User, Payment
 from users.permissions import IsUser
 from users.serializers import UserSerializer, PaymentSerializer, UserCommonSerializer
@@ -50,7 +48,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
         try:
             stripe_product = create_stripe_product(product.name)
-            stripe_product_price =  create_stripe_price(
+            stripe_product_price = create_stripe_price(
                 stripe_product, product.price
             )
             session_id, payment_link = create_stripe_session(

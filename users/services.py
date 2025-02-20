@@ -4,13 +4,13 @@ from forex_python.converter import CurrencyRates
 
 stripe.api_key = STRIPE_API_KEY
 
+
 def convert_rub_to_dollars(amount):
     """ Конвертация рублей в доллары """
 
     c = CurrencyRates()
     rate = c.get_rate("RUB", "USD")
     return int(amount * rate)
-
 
 
 def create_stripe_product(product_name):
